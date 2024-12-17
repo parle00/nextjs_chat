@@ -57,14 +57,11 @@ io.on("connection", (socket) => {
       .emit("message", encryptObject({ ...decryptedPayload, sender: false }));
   });
 
-  // // Odadan çıkma
   // socket.on("leaveRoom", (room) => {
   //   socket.leave(room);
   //   console.log(`${socket.id} kullanıcısı ${room} odasından ayrıldı.`);
   //   socket.to(room).emit("message", `${socket.id} odadan ayrıldı.`);
   // });
-
-  // Kullanıcı bağlantıyı kapattığında
 
   socket.on("disconnect", () => {
     console.log("Bir kullanıcı bağlantıyı kesti:", socket.id);
