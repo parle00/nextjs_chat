@@ -44,7 +44,7 @@ io.on("connection", (socket) => {
       .to(decryptedPayload.roomId)
       .emit(
         "joinStatus",
-        encryptValue(`${decryptedPayload.username} odaya katıldı.`)
+        encryptValue(`${decryptedPayload.name} odaya katıldı.`)
       );
   });
 
@@ -67,7 +67,7 @@ io.on("connection", (socket) => {
   });
 });
 
-const PORT = 3001;
+const PORT = 5001;
 httpServer.listen(PORT, () => {
   console.log(`🚀 Sunucu çalışıyor: http://localhost:${PORT}`);
 });

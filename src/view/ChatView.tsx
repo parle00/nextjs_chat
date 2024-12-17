@@ -32,7 +32,7 @@ const ChatView = () => {
         sender: true,
         roomId: roomValue?.roomname as string,
         message: text.trim(),
-        username: roomValue?.name as string,
+        name: roomValue?.name as string,
         socketId: socket.id,
       };
 
@@ -50,7 +50,7 @@ const ChatView = () => {
         encryptValue(
           JSON.stringify({
             roomId: roomValue?.roomname,
-            username: roomValue?.name as string,
+            name: roomValue?.name as string,
           })
         )
       );
@@ -140,7 +140,7 @@ const ChatView = () => {
                   marginBottom: "4px",
                 }}
               >
-                {msg.username}
+                {msg.name}
               </Typography>
               <Typography variant="body2">{msg.message}</Typography>
             </Stack>

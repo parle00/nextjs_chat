@@ -1,7 +1,7 @@
 export interface MessagesType {
   message: string;
   sender: boolean;
-  username: string;
+  name: string;
   roomId: string;
   socketId: string;
 }
