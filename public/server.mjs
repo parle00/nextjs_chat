@@ -24,7 +24,7 @@ const encryptValue = (value) => {
   return encrypted;
 };
 
-const httpServer = createServer((req, res) => {
+const httpServer = createServer((_, res) => {
   res.writeHead(200, { "Content-Type": "text/html" });
   res.end("<h1>server is running!</h1>");
 });
