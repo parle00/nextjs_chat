@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "concurrently \"node server.mjs\" \"next dev\"",
+    "dev": "concurrently \"node socket_server/server.mjs\" \"next dev\"",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -13,18 +13,21 @@
     "@emotion/styled": "^11.14.0",
     "@mui/icons-material": "^6.2.0",
     "@mui/material": "^6.2.0",
+    "crypto-js": "^4.2.0",
+    "formik": "^2.4.6",
     "next": "14.2.15",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "socket.io": "^4.7.2",
-    "socket.io-client": "^4.7.2"
+    "socket.io-client": "^4.8.1",
+    "yup": "^1.6.0"
   },
   "devDependencies": {
-    "typescript": "^5",
+    "@types/crypto-js": "^4.2.2",
     "@types/node": "^20",
-    "@types/react": "^19",
+    "@types/react": "^19.0.1",
     "@types/react-dom": "^19",
     "@types/socket.io-client": "^1.4.36",
-    "concurrently": "^9.1.0"
+    "concurrently": "^9.1.0",
+    "typescript": "^5"
   }
 }

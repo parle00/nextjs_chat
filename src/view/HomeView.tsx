@@ -1,119 +1,165 @@
 "use client";
-import useSocket from "@/hooks/useSocket";
-import React, { useEffect, useRef, useState } from "react";
-import { Stack, Box, TextField, IconButton, Typography } from "@mui/material";
-import SendIcon from "@mui/icons-material/Send";
 
-interface Messages {
-  id: string;
-  message: string;
-  inComing: boolean;
+import { useRoomContext } from "@/app/context/RoomContext";
+import Loading from "@/app/Loading";
+import {
+  Button,
+  FormGroup,
+  Stack,
+  FormHelperText,
+  TextField,
+  Typography,
+} from "@mui/material";
+import { Form, Formik, ErrorMessage } from "formik";
+import { useRouter } from "next/navigation";
+
+import React, { useEffect, useState } from "react";
+import * as Yup from "yup";
+
+interface FormValues {
+  roomname: string;
+  name: string;
 }
 
-const HomeView = () => {
-  const { socket } = useSocket();
-  const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState<Messages[]>([]);
-  const ref = useRef<HTMLDivElement>(null);
+const validationSchema = Yup.object({
+  roomname: Yup.string().required("Oda adı zorunludur!"),
+  name: Yup.string().required("Kullanıcı adı zorunludur!"),
+});
 
-  const scrollToBottom = () => {
-    if (ref.current) {
-      ref.current.scrollTo({
-        top: ref.current.scrollHeight,
-      });
-    }
+const initialValues: FormValues = {
+  roomname: "",
+  name: "",
+};
+
+const HomeView = () => {
+  const { push } = useRouter();
+  const { isRoomDataLoading, setRoomValue } = useRoomContext();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    setFieldValue: (field: string, value: any) => void
+  ) => {
+    const { name, value } = e.target;
+    const trimmedValue = value.trim();
+    setFieldValue(name, trimmedValue);
   };
 
-  const handleSendMessage = () => {
-    if (message.trim() && socket) {
-      const payload: Messages = {
-        inComing: false,
-        id: socket.id,
-        message: message.trim(),
-      };
-      setMessages([...messages, payload]);
-      scrollToBottom();
-      socket.emit("reciveMessage", payload);
-      setMessage("");
+  const handleSubmit = async (values: FormValues) => {
+    try {
+      setIsLoading(true);
+      setRoomValue({
+        roomname: values.roomname,
+        name: values.name,
+      });
+
+      push("/chat");
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    if (socket) {
-      socket.on("reciveMessage", (msg: Messages) => {
-        scrollToBottom();
-        setMessages((prevState) => [
-          ...prevState,
-          {
-            ...msg,
-          },
-        ]);
-      });
+    if (!isRoomDataLoading) {
+      setRoomValue(null);
     }
-  }, [socket, ref]);
+  }, [isRoomDataLoading]);
 
   return (
     <Stack
-      margin="auto"
-      height="calc(100vh - 40px)"
-      sx={{
-        border: "1px solid #ddd",
-        borderRadius: "8px",
-        padding: "10px",
-        backgroundColor: "#f5f5f5",
-      }}
+      flex={1}
+      minHeight="100vh"
+      bgcolor="#222222"
+      justifyContent="center"
+      alignItems="center"
+      padding="20px"
     >
+      {(isRoomDataLoading || isLoading) && <Loading />}
       <Stack
-        ref={ref}
-        sx={{
-          flexGrow: 1,
-          overflowY: "auto",
-          marginBottom: "10px",
-          paddingRight: "5px",
-        }}
+        maxWidth="450px"
+        borderRadius="8px"
+        paddingX={{ xs: "20px", sm: "35px", md: "50px" }}
+        paddingY="25px"
+        bgcolor="white"
+        width="100%"
+        gap="15px"
       >
-        {messages.map((msg, index) => (
-          <Stack
-            key={index}
-            flexDirection="row"
-            justifyContent={msg.inComing === false ? "flex-end" : "flex-start"}
-            mb="10px"
-          >
-            <Box
-              bgcolor={msg.inComing === false ? "#1976d2" : "#e0e0e0"}
-              color={msg.inComing === false ? "white" : "black"}
-              padding="8px 12px"
-              maxWidth="60%"
-              borderRadius="20px"
-              sx={{
-                wordBreak: "break-word",
-              }}
-            >
-              <Typography variant="body2">{msg.message}</Typography>
-            </Box>
-          </Stack>
-        ))}
-      </Stack>
+        <Typography variant="h1" fontSize="24px" textAlign="center">
+          NEXT-CHAT
+        </Typography>
+        <Formik
+          initialValues={initialValues}
+          validationSchema={validationSchema}
+          onSubmit={handleSubmit}
+        >
+          {({
+            handleChange,
+            setFieldValue,
+            values,
+            errors,
+            touched,
+            isValid,
+            dirty,
+          }) => (
+            <Form>
+              <Stack
+                spacing={2}
+                sx={{
+                  "&& .MuiFormHelperText-root": {
+                    marginLeft: "2px",
+                  },
+                }}
+              >
+                <FormGroup>
+                  <TextField
+                    label="Oda Adı *"
+                    id="roomname"
+                    size="small"
+                    name="roomname"
+                    value={values.roomname}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                      handleChange(e);
+                      handleInputChange(e, setFieldValue);
+                    }}
+                    error={touched.roomname && Boolean(errors.roomname)}
+                  />
+                  <FormHelperText error>
+                    <ErrorMessage name="roomname" />
+                  </FormHelperText>
+                </FormGroup>
 
-      <Stack flexDirection="row" alignItems="center">
-        <TextField
-          onKeyDown={(event: React.KeyboardEvent<HTMLDivElement>) => {
-            if (event.key === "Enter") {
-              event.preventDefault(); // Alt satıra geçmeyi engeller
-              handleSendMessage(); // Mesajı gönderir
-            }
-          }}
-          fullWidth
-          variant="outlined"
-          multiline
-          rows={4}
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          placeholder="Mesajınızı yazın..."
-        />
-        <IconButton onClick={handleSendMessage} color="primary">
-          <SendIcon />
-        </IconButton>
+                <FormGroup>
+                  <TextField
+                    label="Adınız *"
+                    size="small"
+                    id="name"
+                    name="name"
+                    value={values.name}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                      handleChange(e);
+                      handleInputChange(e, setFieldValue);
+                    }}
+                    error={touched.name && Boolean(errors.name)}
+                  />
+                  <FormHelperText error>
+                    <ErrorMessage name="name" />
+                  </FormHelperText>
+                </FormGroup>
+
+                <Button
+                  size="medium"
+                  variant="contained"
+                  type="submit"
+                  disabled={!isValid || !dirty || isLoading}
+                >
+                  Giriş
+                </Button>
+              </Stack>
+            </Form>
+          )}
+        </Formik>
       </Stack>
     </Stack>
   );

@@ -1,7 +1,6 @@
+import { SOCKET_SERVER_URL } from "@/services/const";
 import { useEffect, useState } from "react";
-import { io, Socket } from "socket.io-client";
-
-const SOCKET_SERVER_URL = "http://localhost:3001"; // Veya kullanmakta olduğunuz sunucu
+import { io } from "socket.io-client";
 
 interface UseSocketReturn {
   socket: SocketIOClient.Socket | null;
