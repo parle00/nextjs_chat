@@ -16,6 +16,8 @@ import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import * as Yup from "yup";
 
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 interface FormValues {
   roomname: string;
   name: string;
@@ -46,17 +48,16 @@ const HomeView = () => {
   };
 
   const handleSubmit = async (values: FormValues) => {
+    setIsLoading(true);
     try {
-      setIsLoading(true);
       setRoomValue({
         roomname: values.roomname,
         name: values.name,
       });
-
+      await sleep(2000); // 2000 ms (2 saniye) bekleme
       push("/chat");
     } catch (error) {
       console.log(error);
-    } finally {
       setIsLoading(false);
     }
   };
@@ -76,7 +77,14 @@ const HomeView = () => {
       alignItems="center"
       padding="20px"
     >
-      {(isRoomDataLoading || isLoading) && <Loading />}
+      {(isRoomDataLoading || isLoading) && (
+        <Loading
+          message={
+            isLoading ? "Redirecting to the chat room, please wait." : undefined
+          }
+        />
+      )}
+
       <Stack
         maxWidth="450px"
         borderRadius="8px"
@@ -103,7 +111,7 @@ const HomeView = () => {
             isValid,
             dirty,
           }) => (
-            <Form>
+            <Form autoComplete="off">
               <Stack
                 spacing={2}
                 sx={{
@@ -137,10 +145,7 @@ const HomeView = () => {
                     id="name"
                     name="name"
                     value={values.name}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                      handleChange(e);
-                      handleInputChange(e, setFieldValue);
-                    }}
+                    onChange={handleChange}
                     error={touched.name && Boolean(errors.name)}
                   />
                   <FormHelperText error>

@@ -38,6 +38,7 @@ const ChatView = () => {
 
       socket.emit("sendMessage", encryptMessage(payload));
       setMessages([...messages, payload]);
+
       setText("");
     }
   };
