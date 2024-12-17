@@ -24,11 +24,11 @@
   },
   "include": [
     "next-env.d.ts",
+    "socket-io-client.d.ts",
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "next.config.mjs",
-    "server.mjs"
+    "next.config.mjs"
   ],
   "exclude": ["node_modules"]
 }

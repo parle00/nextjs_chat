@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "concurrently \"node server.mjs\" \"next dev\"",
+    "dev": "concurrently \"node public/server.mjs\" \"next dev\"",
     "build": "next build",
-    "start": "next start",
+    "start": "concurrently \"node public/server.mjs\" \"next start\"",
     "lint": "next lint"
   },
   "dependencies": {

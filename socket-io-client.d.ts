@@ -1,4 +1,4 @@
-// types/socket-io.d.ts
+// types/socket-io-client.d.ts
 
 declare module "socket.io-client" {
   import { Socket } from "socket.io-client";
