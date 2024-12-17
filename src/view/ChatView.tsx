@@ -1,13 +1,28 @@
 "use client";
 import useSocket from "@/hooks/useSocket";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Stack, TextField, IconButton, Typography } from "@mui/material";
+import {
+  Stack,
+  TextField,
+  IconButton,
+  Typography,
+  Paper,
+  Avatar,
+  Box,
+  Divider,
+} from "@mui/material";
 import SendIcon from "@mui/icons-material/Send";
 import { useRoomContext } from "@/app/context/RoomContext";
 import { MessagesType } from "@/model/message";
-import { decryptMessage, encryptMessage, encryptValue } from "@/heplers/utils";
+import {
+  decryptMessage,
+  decryptObject,
+  encryptMessage,
+  encryptValue,
+} from "@/heplers/utils";
 import { useRouter } from "next/navigation";
 import Loading from "@/app/Loading";
+import { RoomUserType } from "@/model/room";
 
 const ChatView = () => {
   const { push } = useRouter();
@@ -17,6 +32,7 @@ const ChatView = () => {
   const ref = useRef<HTMLDivElement>(null);
   const { roomValue, isRoomDataLoading, setRoomValue } = useRoomContext();
   const [isLoading, setIsLoading] = useState(true);
+  const [users, setUsers] = useState<RoomUserType[]>([]);
 
   const scrollToBottom = () => {
     if (ref.current) {
@@ -33,7 +49,6 @@ const ChatView = () => {
         roomId: roomValue?.roomname as string,
         message: text.trim(),
         name: roomValue?.name as string,
-        socketId: socket.id,
       };
 
       socket.emit("sendMessage", encryptMessage(payload));
@@ -54,6 +69,20 @@ const ChatView = () => {
           })
         )
       );
+
+      socket?.on("joinStatus", (payload: string) => {
+        const decryptPayload = decryptObject(payload);
+        const users = decryptPayload.users as RoomUserType[];
+
+        setUsers((prevState) => [
+          ...users.map((x) => {
+            return {
+              name: x.socketId == socket.id ? `${x.name}(Siz)` : x.name,
+              socketId: socket.id,
+            };
+          }),
+        ]);
+      });
 
       socket?.on("message", (msg: string) => {
         scrollToBottom();
@@ -91,10 +120,13 @@ const ChatView = () => {
     };
   }, []);
 
+  console.log(users);
+
   return (
     <Stack
       margin="auto"
       height="calc(100vh - 40px)"
+      gap="15px"
       sx={{
         border: "1px solid #ddd",
         borderRadius: "8px",
@@ -103,6 +135,33 @@ const ChatView = () => {
       }}
     >
       {(isRoomDataLoading || isLoading) && <Loading />}
+      <Stack>
+        <Stack
+          flexDirection="row"
+          flexWrap="wrap"
+          gap="15px"
+          padding={2}
+          alignItems="center"
+          borderRadius={2}
+        >
+          {users.map((user, index) => (
+            <Stack
+              key={index}
+              flexDirection="row"
+              alignItems="center"
+              gap="5px"
+            >
+              <Avatar sx={{ backgroundColor: "#1976d2" }}>
+                {user.name[0].toUpperCase()}
+              </Avatar>
+              <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+                {`${user.name}${index + 1 === users.length ? "" : ","}`}
+              </Typography>
+            </Stack>
+          ))}
+        </Stack>
+        <Box width="100%" bgcolor="gray" height="3px" />
+      </Stack>
       <Stack
         ref={ref}
         sx={{

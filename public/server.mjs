@@ -5,6 +5,8 @@ import CryptoJS from "crypto-js";
 const ENCRYPTION_KEY =
   "794315c0ec37ccf11869b641819ebb291f31dabe677a5f4a01d9631d5ece5650";
 
+const roomUsers = new Map();
+
 const encryptObject = (value) => {
   const encrypted = CryptoJS.AES.encrypt(
     JSON.stringify(value),
@@ -40,12 +42,25 @@ io.on("connection", (socket) => {
     const decryptedPayload = decryptObject(payload);
     socket.join(decryptedPayload.roomId);
 
-    socket
-      .to(decryptedPayload.roomId)
-      .emit(
-        "joinStatus",
-        encryptValue(`${decryptedPayload.name} odaya katıldı.`)
-      );
+    if (!roomUsers.has(decryptedPayload.roomId)) {
+      roomUsers.set(decryptedPayload.roomId, new Map());
+    }
+
+    const userInfo = {
+      socketId: socket.id,
+      name: decryptedPayload.name,
+    };
+
+    roomUsers.get(decryptedPayload.roomId).set(userInfo.socketId, userInfo);
+
+    console.log(Array.from(roomUsers.get(decryptedPayload.roomId).values()));
+    io.to(decryptedPayload.roomId).emit(
+      "joinStatus",
+      encryptObject({
+        users: Array.from(roomUsers.get(decryptedPayload.roomId).values()),
+        message: `${decryptedPayload.name} odaya katıldı.`,
+      })
+    );
   });
 
   socket.on("sendMessage", (payload) => {
@@ -56,14 +71,49 @@ io.on("connection", (socket) => {
       .emit("message", encryptObject({ ...decryptedPayload, sender: false }));
   });
 
-  // socket.on("leaveRoom", (room) => {
-  //   socket.leave(room);
-  //   console.log(`${socket.id} kullanıcısı ${room} odasından ayrıldı.`);
-  //   socket.to(room).emit("message", `${socket.id} odadan ayrıldı.`);
-  // });
+  socket.on("leaveRoom", (payload) => {
+    const decryptedPayload = decryptObject(payload);
+    socket.leave(decryptedPayload.roomId);
+
+    // socket
+    //   .to(decryptedPayload.roomId)
+    //   .emit("joinStatus", `${decryptedPayload.id} odadan ayrıldı.`);
+  });
 
   socket.on("disconnect", () => {
     console.log("Bir kullanıcı bağlantıyı kesti:", socket.id);
+
+    let roomId;
+    let userName;
+    roomUsers.forEach((users, room) => {
+      if (users.has(socket.id)) {
+        roomId = room;
+        const user = users.get(socket.id);
+        userName = user.name;
+        users.delete(socket.id);
+      }
+    });
+
+    if (roomId) {
+      console.log(`Kullanıcı ${userName} ${roomId} odasından kaldırıldı.`);
+
+      io.to(roomId).emit(
+        "joinStatus",
+        encryptObject({
+          users: Array.from(roomUsers.get(roomId).values()),
+          message: `${userName} odayı terk etti.`,
+        })
+      );
+      const remainingUsers = Array.from(roomUsers.get(roomId).values());
+
+      if (remainingUsers.length === 0) {
+        roomUsers.delete(roomId);
+        socket.leave(roomId);
+        console.log(`Oda ${roomId} tamamen boşaldı ve kaldırıldı.`);
+      }
+    } else {
+      console.log(`Kullanıcı ${userName} herhangi bir odada bulunamadı.`);
+    }
   });
 });
 

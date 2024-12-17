@@ -24,3 +24,9 @@ export const decryptValue = (value: string) => {
   const decrypted = bytes.toString(CryptoJS.enc.Utf8);
   return decrypted;
 };
+
+export const decryptObject = (encryptedMessage: string) => {
+  const bytes = CryptoJS.AES.decrypt(encryptedMessage, ENCRYPTION_KEY);
+  const decrypted = bytes.toString(CryptoJS.enc.Utf8);
+  return JSON.parse(decrypted);
+};

@@ -3,5 +3,4 @@ export interface MessagesType {
   sender: boolean;
   name: string;
   roomId: string;
-  socketId: string;
 }
