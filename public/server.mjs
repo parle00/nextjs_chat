@@ -53,12 +53,11 @@ io.on("connection", (socket) => {
 
     roomUsers.get(decryptedPayload.roomId).set(userInfo.socketId, userInfo);
 
-    console.log(Array.from(roomUsers.get(decryptedPayload.roomId).values()));
     io.to(decryptedPayload.roomId).emit(
       "joinStatus",
       encryptObject({
         users: Array.from(roomUsers.get(decryptedPayload.roomId).values()),
-        message: `${decryptedPayload.name} odaya katıldı.`,
+        message: `${decryptedPayload.name} joined the room.`,
       })
     );
   });
@@ -71,18 +70,12 @@ io.on("connection", (socket) => {
       .emit("message", encryptObject({ ...decryptedPayload, sender: false }));
   });
 
-  socket.on("leaveRoom", (payload) => {
-    const decryptedPayload = decryptObject(payload);
-    socket.leave(decryptedPayload.roomId);
-
-    // socket
-    //   .to(decryptedPayload.roomId)
-    //   .emit("joinStatus", `${decryptedPayload.id} odadan ayrıldı.`);
-  });
+  // socket.on("leaveRoom", (payload) => {
+  //   const decryptedPayload = decryptObject(payload);
+  //   socket.leave(decryptedPayload.roomId);
+  // });
 
   socket.on("disconnect", () => {
-    console.log("Bir kullanıcı bağlantıyı kesti:", socket.id);
-
     let roomId;
     let userName;
     roomUsers.forEach((users, room) => {
@@ -95,13 +88,11 @@ io.on("connection", (socket) => {
     });
 
     if (roomId) {
-      console.log(`Kullanıcı ${userName} ${roomId} odasından kaldırıldı.`);
-
       io.to(roomId).emit(
         "joinStatus",
         encryptObject({
           users: Array.from(roomUsers.get(roomId).values()),
-          message: `${userName} odayı terk etti.`,
+          message: `${userName} left the room.`,
         })
       );
       const remainingUsers = Array.from(roomUsers.get(roomId).values());
@@ -109,15 +100,14 @@ io.on("connection", (socket) => {
       if (remainingUsers.length === 0) {
         roomUsers.delete(roomId);
         socket.leave(roomId);
-        console.log(`Oda ${roomId} tamamen boşaldı ve kaldırıldı.`);
       }
     } else {
-      console.log(`Kullanıcı ${userName} herhangi bir odada bulunamadı.`);
+      console.log(`User ${userName} could not be found in any room.`);
     }
   });
 });
 
 const PORT = 5001;
 httpServer.listen(PORT, () => {
-  console.log(`🚀 Sunucu çalışıyor: http://localhost:${PORT}`);
+  console.log(`🚀 Server is running: http://localhost:${PORT}`);
 });

@@ -77,7 +77,7 @@ const ChatView = () => {
         setUsers((prevState) => [
           ...users.map((x) => {
             return {
-              name: x.socketId == socket.id ? `${x.name}(Siz)` : x.name,
+              name: x.socketId == socket.id ? `${x.name}(You)` : x.name,
               socketId: socket.id,
             };
           }),
@@ -119,8 +119,6 @@ const ChatView = () => {
       setRoomValue(null);
     };
   }, []);
-
-  console.log(users);
 
   return (
     <Stack

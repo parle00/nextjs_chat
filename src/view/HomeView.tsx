@@ -159,7 +159,7 @@ const HomeView = () => {
                   type="submit"
                   disabled={!isValid || !dirty || isLoading}
                 >
-                  Giriş
+                  Join or Create Room
                 </Button>
               </Stack>
             </Form>
