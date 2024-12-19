@@ -16,6 +16,7 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
+    "@jitsi/react-sdk": "^1.4.0",
     "@mui/icons-material": "^6.2.0",
     "@mui/material": "^6.2.0",
     "crypto-js": "^4.2.0",
